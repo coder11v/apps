@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Grade Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0d0d0d;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    iframe {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      z-index: 1;
+    }
+
+    #footerOverlay {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 37px;
+      background: #0d0d0d;
+      z-index: 2;
+      pointer-events: none; /* Allows clicking through if necessary, remove if bar should block clicks */
+    }
+  </style>
+</head>
+
+<body>
+
+  <iframe 
+    src="https://mygrades.streamlit.app/?embed_options=dark_theme&embed=true"
+    allow="autoplay; camera; microphone; fullscreen; geolocation; accelerometer; gyroscope; magnetometer; payment; usb; encrypted-media; picture-in-picture; display-capture; clipboard-read; clipboard-write"
+    allowfullscreen 
+    allowpaymentrequest>
+  </iframe>
+
+  <div id="footerOverlay"></div>
+
+</body>
+
+</html>
