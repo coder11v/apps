@@ -79,6 +79,10 @@
             background: #3a3a3a;
         }
 
+        .card.banana::before {
+            background: linear-gradient(90deg, #f7d046, #e6b800);
+        }
+
         .card-header {
             margin-bottom: 20px;
         }
@@ -129,6 +133,12 @@
             border-color: #2a4a2a;
         }
 
+        .badge.in-progress {
+            background: #3a2a1a;
+            color: #fbbf24;
+            border-color: #4a3a2a;
+        }
+
         .btn {
             display: inline-block;
             padding: 12px 30px;
@@ -154,6 +164,37 @@
             color: #6a6a6a;
         }
 
+        .btn.banana-btn {
+            background: linear-gradient(135deg, #f7d046, #e6b800);
+            color: #1a1a1a;
+        }
+
+        .btn.banana-btn:hover {
+            background: linear-gradient(135deg, #ffe066, #f7d046);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: transparent;
+            color: #a0a0a0;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        .back-btn:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+            border-color: #4a4a4a;
+        }
+
         .coming-soon {
             opacity: 0.7;
         }
@@ -177,6 +218,33 @@
 
         .status-indicator.coming {
             background: #ed8936;
+        }
+
+        .status-indicator.in-progress {
+            background: #fbbf24;
+        }
+
+        .menu {
+            display: none;
+        }
+
+        .menu.active {
+            display: block;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes pulse {
@@ -205,44 +273,126 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Vib Suite</h1>
-            <p class="subtitle">Your productivity toolkit</p>
-        </header>
+        <!-- Main Menu -->
+        <div id="main-menu" class="menu active">
+            <header>
+                <h1>Vib Suite</h1>
+                <p class="subtitle">Your productivity toolkit</p>
+            </header>
 
-        <div class="dashboard-grid">
-            <div class="card coming-soon">
-                <div class="card-header">
-                    <div class="card-icon">📧</div>
-                    <h2 class="card-title">iMessage Summarizer</h2>
+            <div class="dashboard-grid">
+                <div class="card coming-soon">
+                    <div class="card-header">
+                        <div class="card-icon">📧</div>
+                        <h2 class="card-title">iMessage Summarizer</h2>
+                    </div>
+                    <p class="card-description">
+                        Quickly summarize long messages and group chats. Get the key points without reading through everything.
+                    </p>
+                    <div style="margin-bottom: 20px;">
+                        <span class="badge"><span class="status-indicator coming"></span>Coming Soon</span>
+                    </div>
+                    <button class="btn" disabled>Launch App</button>
                 </div>
-                <p class="card-description">
-                    Quickly summarize long messages and group chats. Get the key points without reading through everything.
-                </p>
-                <div style="margin-bottom: 20px;">
-                    <span class="badge"><span class="status-indicator coming"></span>Coming Soon</span>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📊</div>
+                        <h2 class="card-title">Grades Summarizer</h2>
+                    </div>
+                    <p class="card-description">
+                        Analyze and visualize your academic performance. Track trends and insights from your grades data.
+                    </p>
+                    <div style="margin-bottom: 20px;">
+                        <span class="badge available"><span class="status-indicator"></span>In Beta</span>
+                    </div>
+                    <a href="https://apps.veerbajaj.com/grades" class="btn" target="_blank">Launch Now</a>
                 </div>
-                <button class="btn" disabled>Launch App</button>
+
+                <div class="card banana">
+                    <div class="card-header">
+                        <div class="card-icon">🍌⚽</div>
+                        <h2 class="card-title">Banana Ballers Projects</h2>
+                    </div>
+                    <p class="card-description">
+                        Explore creative projects from the Banana Ballers team. Movies, games, and more exciting stuff!
+                    </p>
+                    <div style="margin-bottom: 20px;">
+                        <span class="badge available"><span class="status-indicator"></span>available to general public</span>
+                    </div>
+                    <button class="btn banana-btn" onclick="showMenu('banana-menu')">Open Menu</button>
+                </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <h2 class="card-title">Grades Summarizer</h2>
-                </div>
-                <p class="card-description">
-                    Analyze and visualize your academic performance. Track trends and insights from your grades data.
-                </p>
-                <div style="margin-bottom: 20px;">
-                    <span class="badge available"><span class="status-indicator"></span>Available Now</span>
-                </div>
-                <a href="https://apps.veerbajaj.com/grades" class="btn" target="_blank">Launch Now</a>
-            </div>
+            <footer>
+                <p>&copy; 2025 ViB Suite. All rights reserved.</p>
+            </footer>
         </div>
 
-        <footer>
-            <p>&copy; 2025 ViB Suite. All rights reserved.</p>
-        </footer>
+        <!-- Banana Ballers Menu -->
+        <div id="banana-menu" class="menu">
+            <header>
+                <h1>🍌 Banana Ballers</h1>
+                <p class="subtitle">Creative projects from the team. (Note: Banana Ballers apps are beta.)</p>
+            </header>
+
+            <button class="back-btn" onclick="showMenu('main-menu')">
+                ← Back to Main Menu
+            </button>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🎬</div>
+                        <h2 class="card-title">Movie Explainer</h2>
+                    </div>
+                    <p class="card-description">
+                        Get detailed explanations and breakdowns of anything from characters in your favorite movies. (John Knowles)
+                    </p>
+                    <div style="margin-bottom: 20px;">
+                        <span class="badge in-progress"><span class="status-indicator in-progress"></span>In Progress</span>
+                    </div>
+                    <button class="btn" disabled>Coming Soon</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🏀</div>
+                        <h2 class="card-title">Pok A Tok</h2>
+                    </div>
+                    <p class="card-description">
+                        Experience the ancient Mayan ball game brought to life. A unique gaming experience awaits!
+                    </p>
+                    <p class="card-description">
+                        The code is "2030."
+                    </p>
+                    <div style="margin-bottom: 20px;">
+                        <span class="badge available"><span class="status-indicator"></span>Available Now</span>
+                    </div>
+                    <a href="https://popatok.bananaballers.run.place/" class="btn" target="_blank">Play Now</a>
+                </div>
+            </div>
+
+            <footer>
+                <p>&copy; 2025 ViB Suite. All rights reserved.</p>
+            </footer>
+        </div>
     </div>
+
+    <script>
+        function showMenu(menuId) {
+            // Hide all menus
+            document.querySelectorAll('.menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+            
+            // Show selected menu with animation
+            const targetMenu = document.getElementById(menuId);
+            targetMenu.classList.add('active', 'fade-in');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
