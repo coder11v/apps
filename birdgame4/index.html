@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bird Game 4 - Get Well Soon Alex!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .ui-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .ui-overlay > * { pointer-events: auto; }
+
+        .ctrl-btn {
+            position: absolute;
+            width: 50px; height: 50px;
+            background: rgba(0,0,0,0.35);
+            border: 2px solid rgba(255,255,255,0.25);
+            border-radius: 50%;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .ctrl-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+
+        #muteBtn { top: 20px; right: 20px; }
+        #pauseBtn { top: 20px; left: 20px; }
+
+        .hidden { display: none !important; }
+
+        .screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            padding: 20px;
+            opacity: 1;
+            transition: opacity 0.4s;
+        }
+
+        .screen.screen-hidden { opacity: 0; pointer-events: none; }
+
+        .title {
+            font-size: clamp(32px, 8vw, 52px);
+            font-weight: 800;
+            background: linear-gradient(180deg, #8BC34A 0%, #4CAF50 50%, #2E7D32 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-align: center;
+            text-shadow: 0 4px 20px rgba(139, 195, 74, 0.3);
+        }
+
+        .subtitle {
+            font-size: clamp(14px, 3vw, 18px);
+            color: #81C784;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .message-box {
+            background: linear-gradient(135deg, rgba(139,195,74,0.15) 0%, rgba(76,175,80,0.1) 100%);
+            border: 1px solid rgba(139,195,74,0.3);
+            border-radius: 20px;
+            padding: clamp(16px, 4vw, 24px);
+            max-width: min(400px, 90vw);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .message-box p {
+            color: rgba(255,255,255,0.9);
+            font-size: clamp(14px, 3.5vw, 17px);
+            line-height: 1.7;
+        }
+
+        .message-box .name { color: #AED581; font-weight: 700; }
+        .message-box .heart { color: #F48FB1; }
+
+        .btn {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(180deg, #8BC34A 0%, #689F38 100%);
+            border: none;
+            padding: clamp(12px, 3vw, 16px) clamp(40px, 10vw, 60px);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #558B2F, 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.1s ease;
+            margin: 8px;
+        }
+
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #558B2F, 0 14px 25px rgba(0,0,0,0.3); }
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #558B2F; }
+
+        .btn-secondary {
+            background: linear-gradient(180deg, #FF8A65 0%, #E64A19 100%);
+            box-shadow: 0 6px 0 #BF360C, 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .btn-secondary:hover { box-shadow: 0 9px 0 #BF360C, 0 14px 25px rgba(0,0,0,0.3); }
+        .btn-secondary:active { box-shadow: 0 2px 0 #BF360C; }
+
+        .instruction { font-size: clamp(12px, 3vw, 15px); color: rgba(255,255,255,0.5); margin-top: 15px; }
+
+        .score-display {
+            font-size: clamp(48px, 12vw, 72px);
+            font-weight: 800;
+            color: #C5E1A5;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            margin: 10px 0;
+        }
+
+        .high-score { font-size: clamp(16px, 4vw, 20px); color: #81C784; margin-bottom: 15px; }
+        .new-record { color: #FFAB91; animation: pulse 0.5s ease infinite alternate; }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
+
+        .skins-section { margin: 15px 0; text-align: center; }
+        .skins-title { font-size: clamp(12px, 3vw, 14px); color: rgba(255,255,255,0.6); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+
+        .skins-grid {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: min(350px, 90vw);
+        }
+
+        .skin-btn {
+            width: clamp(44px, 11vw, 54px);
+            height: clamp(44px, 11vw, 54px);
+            border-radius: 12px;
+            border: 3px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(20px, 5vw, 26px);
+            position: relative;
+        }
+
+        .skin-btn:hover:not(.locked) { transform: scale(1.1); border-color: rgba(255,255,255,0.5); }
+        .skin-btn.selected { border-color: #8BC34A; box-shadow: 0 0 15px rgba(139,195,74,0.5); }
+        .skin-btn.locked { opacity: 0.4; cursor: not-allowed; }
+        .skin-btn.locked::after { content: '🔒'; position: absolute; font-size: 12px; bottom: -4px; right: -4px; }
+
+        .skin-requirement { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+
+        .stats { display: flex; gap: clamp(15px, 5vw, 25px); margin: 15px 0; }
+        .stat { text-align: center; }
+        .stat-value { font-size: clamp(20px, 5vw, 28px); font-weight: 700; color: #C5E1A5; }
+        .stat-label { font-size: clamp(10px, 2.5vw, 12px); color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+
+        .powerup-indicator {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 50;
+        }
+
+        .powerup-active {
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            color: white;
+            backdrop-filter: blur(8px);
+        }
+
+        .powerup-timer { width: 32px; height: 5px; background: rgba(255,255,255,0.3); border-radius: 3px; overflow: hidden; }
+        .powerup-timer-fill { height: 100%; transition: width 0.1s linear; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="ui-overlay">
+        <button class="ctrl-btn" id="muteBtn" title="Toggle Sound">🔊</button>
+        <button class="ctrl-btn hidden" id="pauseBtn" title="Pause">⏸️</button>
+        <div class="powerup-indicator" id="powerupIndicator"></div>
+
+        <!-- Start Screen -->
+        <div class="screen" id="startScreen">
+            <div class="title">🌿 Bird Game 4 🌿</div>
+            <div class="subtitle">✨ NATURE EDITION ✨</div>
+            
+            <div class="message-box">
+                <p>
+                    Hey <span class="name">Alex</span>! <span class="heart">🦪</span><br><br>
+                    Wishing you a super speedy recovery! Fly through the forest, catch worms, and enjoy nature's beauty!<br><br>
+                    <span class="heart">🐦</span> You got this! <span class="heart">🦪</span>
+                </p>
+            </div>
+
+            <div class="skins-section">
+                <div class="skins-title">Choose Your Bird</div>
+                <div class="skins-grid" id="skinSelector"></div>
+                <div class="skin-requirement" id="skinRequirement"></div>
+            </div>
+            
+            <button class="btn" id="startBtn">FLY!</button>
+            <div class="instruction">Click • Tap • Space to flap</div>
+        </div>
+
+        <!-- Pause Screen -->
+        <div class="screen screen-hidden" id="pauseScreen">
+            <div class="title">🍃 Paused 🍃</div>
+            <div class="subtitle">Rest your wings, Alex! 😊</div>
+            <button class="btn" id="resumeBtn">Resume</button>
+            <button class="btn btn-secondary" id="quitBtn">Quit</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="screen screen-hidden" id="gameOverScreen">
+            <div class="title">🌻 Nice Flight! 🌻</div>
+            <div class="score-display" id="finalScore">0</div>
+            <div class="high-score" id="highScoreText">Best: 0</div>
+            
+            <div class="stats">
+                <div class="stat"><div class="stat-value" id="statTrees">0</div><div class="stat-label">Trees</div></div>
+                <div class="stat"><div class="stat-value" id="statTreats">0</div><div class="stat-label">Treats</div></div>
+                <div class="stat"><div class="stat-value" id="statTime">0s</div><div class="stat-label">Time</div></div>
+            </div>
+
+            <div class="message-box" style="padding: 14px;">
+                <p id="encouragement">Great flight! Every wingbeat brings you closer to recovery! 💪</p>
+            </div>
+            
+            <button class="btn" id="restartBtn">Fly Again!</button>
+            <button class="btn btn-secondary" id="menuBtn">Nest</button>
+        </div>
+    </div>
+
+<script>
+// ============================================
+// BIRD GAME 4 - Nature Edition for Alex
+// Trees, worms, berries, realistic flight
+// ============================================
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// --- Fullscreen Canvas ---
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Virtual coordinates (game logic runs at 800x600, scaled to screen)
+const VW = 800, VH = 600;
+const scaleX = () => canvas.width / VW;
+const scaleY = () => canvas.height / VH;
+const scale = () => Math.min(scaleX(), scaleY());
+
+// ============================================
+// AUDIO SYSTEM
+// ============================================
+const Audio = {
+    muted: localStorage.getItem('bg4NatureMuted') === 'true',
+    ctx: null,
+    
+    init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    },
+    
+    play(type) {
+        if (this.muted || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        const t = this.ctx.currentTime;
+        
+        if (type === 'flap') {
+            // Soft chirp
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, t);
+            osc.frequency.exponentialRampToValueAtTime(1200, t + 0.05);
+            osc.frequency.exponentialRampToValueAtTime(600, t + 0.12);
+            gain.gain.setValueAtTime(0.06, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+            osc.start(t); osc.stop(t + 0.12);
+        } else if (type === 'score') {
+            // Happy chirp
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, t);
+            osc.frequency.setValueAtTime(1100, t + 0.07);
+            osc.frequency.setValueAtTime(1320, t + 0.14);
+            gain.gain.setValueAtTime(0.1, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.22);
+            osc.start(t); osc.stop(t + 0.22);
+        } else if (type === 'treat') {
+            // Yummy sound
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(500, t);
+            osc.frequency.exponentialRampToValueAtTime(1200, t + 0.1);
+            gain.gain.setValueAtTime(0.12, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            osc.start(t); osc.stop(t + 0.15);
+        } else if (type === 'hit') {
+            // Soft thud
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, t);
+            osc.frequency.exponentialRampToValueAtTime(50, t + 0.2);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+            osc.start(t); osc.stop(t + 0.2);
+        } else if (type === 'shield') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, t);
+            osc.frequency.exponentialRampToValueAtTime(400, t + 0.1);
+            gain.gain.setValueAtTime(0.08, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+            osc.start(t); osc.stop(t + 0.12);
+        }
+    },
+    
+    toggle() {
+        this.muted = !this.muted;
+        localStorage.setItem('bg4NatureMuted', this.muted);
+        document.getElementById('muteBtn').textContent = this.muted ? '🔇' : '🔊';
+    }
+};
+
+// ============================================
+// BIRD SPECIES (Skins)
+// ============================================
+const BIRDS = [
+    { id: 'robin', emoji: '🐦', name: 'Robin', body: '#D84315', wing: '#BF360C', belly: '#FFCCBC', unlock: 0 },
+    { id: 'bluebird', emoji: '🐤', name: 'Bluebird', body: '#1E88E5', wing: '#1565C0', belly: '#BBDEFB', unlock: 5 },
+    { id: 'cardinal', emoji: '🔴', name: 'Cardinal', body: '#C62828', wing: '#B71C1C', belly: '#FFCDD2', unlock: 15 },
+    { id: 'goldfinch', emoji: '💛', name: 'Goldfinch', body: '#FDD835', wing: '#F9A825', belly: '#FFF9C4', unlock: 25 },
+    { id: 'hummingbird', emoji: '💚', name: 'Hummingbird', body: '#00897B', wing: '#00695C', belly: '#B2DFDB', unlock: 40 },
+    { id: 'owl', emoji: '🦉', name: 'Owl', body: '#6D4C41', wing: '#5D4037', belly: '#D7CCC8', unlock: 60 },
+    { id: 'parrot', emoji: '🦜', name: 'Parrot', body: '#43A047', wing: '#2E7D32', belly: '#A5D6A7', unlock: 80 },
+    { id: 'phoenix', emoji: '🔥', name: 'Phoenix', body: '#FF6F00', wing: '#E65100', belly: '#FFE0B2', unlock: 100 }
+];
+
+// ============================================
+// TREATS (Power-ups) - Nature themed
+// ============================================
+const TREATS = {
+    worm: { emoji: '🪱', name: 'Worm', duration: 6000, color: '#FF7043', effect: 'double', ring: '#FFAB91', desc: '2x Score' },
+    berry: { emoji: '🫐', name: 'Berry', duration: 5000, color: '#AB47BC', effect: 'slowmo', ring: '#CE93D8', desc: 'Slow-Mo' },
+    bug: { emoji: '🐛', name: 'Caterpillar', duration: 4000, color: '#66BB6A', effect: 'shield', ring: '#A5D6A7', desc: 'Shield' },
+    immortal: { emoji: '⭐', name: 'Star', duration: 10000, color: '#FFD700', effect: 'immortal', ring: '#FFF59D', desc: 'Immortal!' }
+};
+
+// Easter egg: typing "birb" spawns a random treat, "veer" gives immortal for 10 pts
+let birbBuffer = '';
+let veerBuffer = '';
+const BIRB_CODE = 'birb';
+const VEER_CODE = 'veer';
+
+// ============================================
+// GAME STATE
+// ============================================
+const G = {
+    state: 'start',
+    score: 0,
+    highScore: parseInt(localStorage.getItem('bg4NatureHigh')) || 0,
+    bird: localStorage.getItem('bg4NatureBird') || 'robin',
+    startTime: 0,
+    playTime: 0,
+    treesCleared: 0,
+    treatsCollected: 0,
+    baseSpeed: 2.0,
+    treeSpeed: 2.0,
+    treeGap: 180,
+    treeInterval: 2200,
+    timeOfDay: 0.35,
+    wind: 0,
+    powerups: {
+        slowmo: { active: false, end: 0 },
+        shield: { active: false, end: 0 },
+        double: { active: false, end: 0 },
+        immortal: { active: false, end: 0 }
+    }
+};
+
+// ============================================
+// BIRD
+// ============================================
+const bird = {
+    x: 150, y: 300,
+    w: 50, h: 40,
+    vel: 0,
+    gravity: 0.25,  // Slower, floatier gravity
+    jump: -6,       // Gentler flap
+    rot: 0,
+    wing: 0,
+    tailWag: 0,
+    
+    reset() { this.y = 300; this.vel = 0; this.rot = 0; },
+    
+    flap() {
+        this.vel = this.jump;
+        this.wing = -0.8;
+        Audio.play('flap');
+        // Feather particles
+        for (let i = 0; i < 3; i++) {
+            particles.push(new Particle(this.x, this.y + this.h/2, 'feather'));
+        }
+    },
+    
+    update() {
+        const mod = G.powerups.slowmo.active ? 0.5 : 1;
+        this.vel += this.gravity * mod;
+        this.vel = Math.max(-10, Math.min(8, this.vel)); // Terminal velocity
+        this.y += this.vel * mod;
+        
+        // Smooth rotation
+        const targetRot = this.vel * 4;
+        this.rot += (Math.min(Math.max(targetRot, -25), 70) - this.rot) * 0.1;
+        
+        // Wing animation
+        this.wing += (0 - this.wing) * 0.15;
+        this.tailWag += 0.15;
+    },
+    
+    draw() {
+        const sx = scaleX(), sy = scaleY();
+        const spec = BIRDS.find(b => b.id === G.bird);
+        
+        ctx.save();
+        ctx.translate(this.x * sx, this.y * sy);
+        ctx.rotate(this.rot * Math.PI / 180);
+        
+        const w = this.w * sx, h = this.h * sy;
+        
+        // Shield aura
+        if (G.powerups.shield.active) {
+            ctx.beginPath();
+            ctx.arc(0, 0, w * 0.8, 0, Math.PI * 2);
+            const grd = ctx.createRadialGradient(0, 0, w * 0.3, 0, 0, w * 0.8);
+            grd.addColorStop(0, 'rgba(165,214,167,0)');
+            grd.addColorStop(0.6, 'rgba(165,214,167,0.2)');
+            grd.addColorStop(1, 'rgba(129,199,132,0.4)');
+            ctx.fillStyle = grd;
+            ctx.fill();
+        }
+        
+        // Immortal aura (golden crown effect)
+        if (G.powerups.immortal.active) {
+            // Outer golden glow
+            ctx.beginPath();
+            ctx.arc(0, 0, w * 1.0, 0, Math.PI * 2);
+            const goldGrd = ctx.createRadialGradient(0, 0, w * 0.3, 0, 0, w * 1.0);
+            goldGrd.addColorStop(0, 'rgba(255,215,0,0.1)');
+            goldGrd.addColorStop(0.5, 'rgba(255,215,0,0.25)');
+            goldGrd.addColorStop(0.8, 'rgba(255,193,7,0.15)');
+            goldGrd.addColorStop(1, 'rgba(255,215,0,0)');
+            ctx.fillStyle = goldGrd;
+            ctx.fill();
+            
+            // Sparkle ring
+            ctx.strokeStyle = 'rgba(255,215,0,0.6)';
+            ctx.lineWidth = 3 * scaleX();
+            ctx.setLineDash([5, 8]);
+            ctx.beginPath();
+            ctx.arc(0, 0, w * 0.85, bird.tailWag * 2, bird.tailWag * 2 + Math.PI * 1.5);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // Tail
+        ctx.fillStyle = spec.wing;
+        ctx.save();
+        ctx.translate(-w * 0.4, 0);
+        ctx.rotate(Math.sin(this.tailWag) * 0.1);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w * 0.25, h * 0.15, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        // Body
+        ctx.fillStyle = spec.body;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w * 0.45, h * 0.42, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Belly
+        ctx.fillStyle = spec.belly;
+        ctx.beginPath();
+        ctx.ellipse(w * 0.05, h * 0.1, w * 0.28, h * 0.28, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Wing
+        ctx.save();
+        ctx.translate(-w * 0.05, h * 0.05);
+        ctx.rotate(this.wing + Math.sin(this.tailWag * 2) * 0.15);
+        ctx.fillStyle = spec.wing;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w * 0.22, h * 0.35, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        // Head
+        ctx.fillStyle = spec.body;
+        ctx.beginPath();
+        ctx.arc(w * 0.25, -h * 0.15, w * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Eye
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(w * 0.32, -h * 0.2, w * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.arc(w * 0.35, -h * 0.2, w * 0.055, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(w * 0.37, -h * 0.23, w * 0.025, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Beak
+        ctx.fillStyle = '#FF8F00';
+        ctx.beginPath();
+        ctx.moveTo(w * 0.42, -h * 0.12);
+        ctx.lineTo(w * 0.58, -h * 0.08);
+        ctx.lineTo(w * 0.42, -h * 0.02);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+    }
+};
+
+// ============================================
+// TREES (Obstacles)
+// ============================================
+const trees = [];
+
+class Tree {
+    constructor() {
+        const minGap = 100, maxTop = VH - G.treeGap - 150;
+        this.topH = Math.random() * (maxTop - minGap) + minGap;
+        this.botY = this.topH + G.treeGap;
+        this.x = VW + 50;
+        this.w = 80;
+        this.scored = false;
+        this.variant = Math.floor(Math.random() * 3); // Different tree styles
+        this.leafOffset = Math.random() * Math.PI * 2;
+        
+        // Maybe spawn treat
+        if (Math.random() < 0.18 && G.score > 1) {
+            const types = Object.keys(TREATS);
+            this.treat = {
+                type: types[Math.floor(Math.random() * types.length)],
+                y: this.topH + G.treeGap / 2,
+                got: false,
+                bob: Math.random() * Math.PI * 2
+            };
+        }
+    }
+    
+    update(dt) {
+        const mod = G.powerups.slowmo.active ? 0.5 : 1;
+        this.x -= G.treeSpeed * mod;
+        this.leafOffset += 0.02;
+        if (this.treat) this.treat.bob += 0.08;
+        return this.x > -this.w - 50;
+    }
+    
+    draw() {
+        const sx = scaleX(), sy = scaleY();
+        
+        // Top tree (hanging down) - branches/vines
+        this.drawTreeTop(sx, sy);
+        
+        // Bottom tree (growing up)
+        this.drawTreeBottom(sx, sy);
+        
+        // Treat
+        if (this.treat && !this.treat.got) {
+            const cfg = TREATS[this.treat.type];
+            const bob = Math.sin(this.treat.bob) * 8;
+            const cx = this.x * sx;
+            const cy = (this.treat.y + bob) * sy;
+            const pulse = 1 + Math.sin(this.treat.bob * 1.5) * 0.1;
+            const s = scale();
+            
+            // Outer pulsing ring
+            ctx.beginPath();
+            ctx.arc(cx, cy, 42 * s * pulse, 0, Math.PI * 2);
+            ctx.strokeStyle = cfg.ring;
+            ctx.lineWidth = 4 * s;
+            ctx.globalAlpha = 0.6 + Math.sin(this.treat.bob * 2) * 0.3;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            
+            // Second ring
+            ctx.beginPath();
+            ctx.arc(cx, cy, 35 * s * pulse, 0, Math.PI * 2);
+            ctx.strokeStyle = cfg.color;
+            ctx.lineWidth = 3 * s;
+            ctx.stroke();
+            
+            // Bright glow
+            ctx.beginPath();
+            ctx.arc(cx, cy, 32 * s, 0, Math.PI * 2);
+            const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 32 * s);
+            glow.addColorStop(0, cfg.color + 'CC');
+            glow.addColorStop(0.5, cfg.color + '66');
+            glow.addColorStop(1, cfg.color + '00');
+            ctx.fillStyle = glow;
+            ctx.fill();
+            
+            // White inner circle background
+            ctx.beginPath();
+            ctx.arc(cx, cy, 22 * s, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.fill();
+            ctx.strokeStyle = cfg.color;
+            ctx.lineWidth = 3 * s;
+            ctx.stroke();
+            
+            // Draw treat emoji
+            ctx.font = `${30 * s}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(cfg.emoji, cx, cy);
+            
+            // Label below
+            ctx.font = `bold ${11 * s}px sans-serif`;
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.lineWidth = 3 * s;
+            ctx.strokeText(cfg.desc, cx, cy + 38 * s);
+            ctx.fillText(cfg.desc, cx, cy + 38 * s);
+        }
+    }
+    
+    drawTreeTop(sx, sy) {
+        const x = this.x * sx, h = this.topH * sy, w = this.w * sx;
+        
+        // Trunk/branch
+        const trunkGrd = ctx.createLinearGradient(x - w/2, 0, x + w/2, 0);
+        trunkGrd.addColorStop(0, '#5D4037');
+        trunkGrd.addColorStop(0.3, '#6D4C41');
+        trunkGrd.addColorStop(0.7, '#6D4C41');
+        trunkGrd.addColorStop(1, '#4E342E');
+        
+        ctx.fillStyle = trunkGrd;
+        ctx.fillRect(x - w * 0.3, 0, w * 0.6, h);
+        
+        // Hanging vines/leaves
+        ctx.fillStyle = '#2E7D32';
+        for (let i = 0; i < 5; i++) {
+            const vx = x - w * 0.4 + (i / 4) * w * 0.8;
+            const vLen = 20 + Math.sin(this.leafOffset + i) * 10;
+            ctx.beginPath();
+            ctx.moveTo(vx, h);
+            ctx.quadraticCurveTo(vx + 5, h + vLen * sy * 0.5, vx, h + vLen * sy);
+            ctx.quadraticCurveTo(vx - 5, h + vLen * sy * 0.5, vx, h);
+            ctx.fill();
+        }
+        
+        // Foliage at bottom of top section
+        const leafColors = ['#388E3C', '#43A047', '#2E7D32', '#1B5E20'];
+        for (let i = 0; i < 8; i++) {
+            ctx.fillStyle = leafColors[i % leafColors.length];
+            const lx = x - w * 0.6 + (i / 7) * w * 1.2;
+            const ly = h - 10 * sy;
+            const lr = (15 + Math.sin(this.leafOffset + i * 0.5) * 5) * scale();
+            ctx.beginPath();
+            ctx.arc(lx, ly, lr, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    drawTreeBottom(sx, sy) {
+        const x = this.x * sx, y = this.botY * sy, w = this.w * sx;
+        const h = (VH - this.botY) * sy;
+        
+        // Trunk
+        const trunkGrd = ctx.createLinearGradient(x - w/2, y, x + w/2, y);
+        trunkGrd.addColorStop(0, '#5D4037');
+        trunkGrd.addColorStop(0.3, '#795548');
+        trunkGrd.addColorStop(0.7, '#795548');
+        trunkGrd.addColorStop(1, '#4E342E');
+        
+        ctx.fillStyle = trunkGrd;
+        
+        // Trunk with taper
+        ctx.beginPath();
+        ctx.moveTo(x - w * 0.25, y);
+        ctx.lineTo(x - w * 0.35, canvas.height);
+        ctx.lineTo(x + w * 0.35, canvas.height);
+        ctx.lineTo(x + w * 0.25, y);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Tree crown
+        const crownColors = ['#2E7D32', '#388E3C', '#43A047', '#4CAF50', '#66BB6A'];
+        
+        // Multiple layers of foliage
+        for (let layer = 0; layer < 3; layer++) {
+            const ly = y + (10 - layer * 5) * sy;
+            const lw = (w * 0.9) * (1 - layer * 0.15);
+            
+            for (let i = 0; i < 7; i++) {
+                const leafX = x - lw/2 + (i / 6) * lw;
+                const leafY = ly + Math.sin(this.leafOffset + i + layer) * 4 * sy;
+                const leafR = (18 + Math.random() * 8 - layer * 3) * scale();
+                
+                ctx.fillStyle = crownColors[(i + layer) % crownColors.length];
+                ctx.beginPath();
+                ctx.arc(leafX, leafY, leafR, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Top of tree
+        ctx.fillStyle = '#388E3C';
+        ctx.beginPath();
+        ctx.arc(x, y - 5 * sy, 20 * scale(), 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    collides() {
+        const pad = 12;
+        const box = { x: bird.x - bird.w/2 + pad, y: bird.y - bird.h/2 + pad, w: bird.w - pad*2, h: bird.h - pad*2 };
+        const treeX = this.x - this.w * 0.3;
+        const treeW = this.w * 0.6;
+        
+        if (box.x + box.w > treeX && box.x < treeX + treeW) {
+            if (box.y < this.topH || box.y + box.h > this.botY) return true;
+        }
+        return false;
+    }
+    
+    checkTreat() {
+        if (!this.treat || this.treat.got) return null;
+        const dx = bird.x - this.x;
+        const dy = bird.y - this.treat.y;
+        if (Math.sqrt(dx*dx + dy*dy) < 45) {
+            this.treat.got = true;
+            return this.treat.type;
+        }
+        return null;
+    }
+}
+
+// ============================================
+// PARTICLES
+// ============================================
+const particles = [];
+
+// Floating treats (for birb easter egg)
+const floatingTreats = [];
+
+// Floating treat class (for birb easter egg)
+class FloatingTreat {
+    constructor() {
+        const types = Object.keys(TREATS);
+        this.type = types[Math.floor(Math.random() * types.length)];
+        this.x = VW + 50;
+        this.y = 100 + Math.random() * (VH * 0.6);
+        this.bob = Math.random() * Math.PI * 2;
+        this.got = false;
+        this.speed = 2 + Math.random();
+    }
+    
+    update() {
+        const mod = G.powerups.slowmo.active ? 0.5 : 1;
+        this.x -= this.speed * mod;
+        this.bob += 0.08;
+        return this.x > -50 && !this.got;
+    }
+    
+    draw() {
+        if (this.got) return;
+        const sx = scaleX(), sy = scaleY();
+        const cfg = TREATS[this.type];
+        const bob = Math.sin(this.bob) * 10;
+        const cx = this.x * sx;
+        const cy = (this.y + bob) * sy;
+        const pulse = 1 + Math.sin(this.bob * 1.5) * 0.12;
+        const s = scale();
+        
+        // Sparkle trail
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const tx = cx + (i * 12 * s);
+            const ty = cy + Math.sin(this.bob + i * 0.5) * 5 * s;
+            ctx.moveTo(tx, ty);
+            ctx.arc(tx, ty, (3 - i * 0.5) * s, 0, Math.PI * 2);
+        }
+        ctx.fillStyle = cfg.ring + '60';
+        ctx.fill();
+        
+        // Outer pulsing ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, 45 * s * pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = cfg.ring;
+        ctx.lineWidth = 5 * s;
+        ctx.globalAlpha = 0.7 + Math.sin(this.bob * 2) * 0.3;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        
+        // Second ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, 38 * s * pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = cfg.color;
+        ctx.lineWidth = 3 * s;
+        ctx.stroke();
+        
+        // Bright glow
+        ctx.beginPath();
+        ctx.arc(cx, cy, 35 * s, 0, Math.PI * 2);
+        const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 35 * s);
+        glow.addColorStop(0, cfg.color + 'DD');
+        glow.addColorStop(0.5, cfg.color + '77');
+        glow.addColorStop(1, cfg.color + '00');
+        ctx.fillStyle = glow;
+        ctx.fill();
+        
+        // White background
+        ctx.beginPath();
+        ctx.arc(cx, cy, 25 * s, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.fill();
+        ctx.strokeStyle = cfg.color;
+        ctx.lineWidth = 3 * s;
+        ctx.stroke();
+        
+        // Emoji
+        ctx.font = `${34 * s}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cfg.emoji, cx, cy);
+        
+        // Label
+        ctx.font = `bold ${12 * s}px sans-serif`;
+        ctx.fillStyle = 'white';
+        ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+        ctx.lineWidth = 3 * s;
+        ctx.strokeText(cfg.desc, cx, cy + 42 * s);
+        ctx.fillText(cfg.desc, cx, cy + 42 * s);
+    }
+    
+    checkCollision() {
+        if (this.got) return null;
+        const dx = bird.x - this.x;
+        const dy = bird.y - this.y;
+        if (Math.sqrt(dx*dx + dy*dy) < 50) {
+            this.got = true;
+            return this.type;
+        }
+        return null;
+    }
+}
+
+class Particle {
+    constructor(x, y, type) {
+        this.x = x; this.y = y; this.type = type;
+        
+        if (type === 'feather') {
+            this.vx = (Math.random() - 0.5) * 2 - 1;
+            this.vy = (Math.random() - 0.5) * 1.5;
+            this.life = 50;
+            this.rot = Math.random() * Math.PI * 2;
+            this.rotSpd = (Math.random() - 0.5) * 0.15;
+            this.size = 4 + Math.random() * 4;
+            const spec = BIRDS.find(b => b.id === G.bird);
+            this.color = [spec.body, spec.wing, spec.belly][Math.floor(Math.random() * 3)];
+        } else if (type === 'score') {
+            this.vx = 0; this.vy = -1.5;
+            this.life = 50;
+            this.text = G.powerups.double.active ? '+2' : '+1';
+            this.color = '#C5E1A5';
+        } else if (type === 'leaf') {
+            this.vx = -1.5 - Math.random();
+            this.vy = Math.random() * 0.5 - 0.25;
+            this.life = 150 + Math.random() * 100;
+            this.rot = Math.random() * Math.PI * 2;
+            this.rotSpd = (Math.random() - 0.5) * 0.1;
+            this.size = 6 + Math.random() * 6;
+            this.color = ['#4CAF50', '#8BC34A', '#CDDC39', '#FFC107', '#FF9800'][Math.floor(Math.random() * 5)];
+            this.sway = Math.random() * Math.PI * 2;
+        } else if (type === 'butterfly') {
+            this.vx = -0.8 - Math.random() * 0.5;
+            this.vy = 0;
+            this.life = 300;
+            this.wing = 0;
+            this.color = ['#E91E63', '#9C27B0', '#3F51B5', '#FF9800'][Math.floor(Math.random() * 4)];
+            this.baseY = y;
+        } else if (type === 'poof') {
+            const ang = Math.random() * Math.PI * 2;
+            const spd = 1.5 + Math.random() * 2;
+            this.vx = Math.cos(ang) * spd;
+            this.vy = Math.sin(ang) * spd;
+            this.life = 30;
+            this.size = 5 + Math.random() * 8;
+            this.color = '#A5D6A7';
+        }
+        this.maxLife = this.life;
+    }
+    
+    update() {
+        this.x += this.vx; this.y += this.vy;
+        this.life--;
+        
+        if (this.type === 'feather') {
+            this.vy += 0.03;
+            this.rot += this.rotSpd;
+            this.vx *= 0.99;
+        } else if (this.type === 'leaf') {
+            this.sway += 0.05;
+            this.vx += Math.sin(this.sway) * 0.02;
+            this.vy += 0.01;
+            this.rot += this.rotSpd;
+        } else if (this.type === 'butterfly') {
+            this.wing += 0.4;
+            this.y = this.baseY + Math.sin(this.x * 0.02) * 30;
+        }
+        
+        return this.life > 0 && this.x > -50;
+    }
+    
+    draw() {
+        const sx = scaleX(), sy = scaleY();
+        const alpha = Math.min(1, this.life / (this.maxLife * 0.3));
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        
+        if (this.type === 'feather') {
+            ctx.translate(this.x * sx, this.y * sy);
+            ctx.rotate(this.rot);
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.size * scale(), this.size * 0.4 * scale(), 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (this.type === 'score') {
+            ctx.font = `bold ${22 * scale()}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = this.color;
+            ctx.fillText(this.text, this.x * sx, this.y * sy);
+        } else if (this.type === 'leaf') {
+            ctx.translate(this.x * sx, this.y * sy);
+            ctx.rotate(this.rot);
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.size * scale(), this.size * 0.5 * scale(), 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Leaf vein
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-this.size * scale() * 0.8, 0);
+            ctx.lineTo(this.size * scale() * 0.8, 0);
+            ctx.stroke();
+        } else if (this.type === 'butterfly') {
+            ctx.translate(this.x * sx, this.y * sy);
+            const wingAng = Math.sin(this.wing) * 0.7;
+            // Wings
+            ctx.fillStyle = this.color;
+            ctx.save();
+            ctx.rotate(wingAng);
+            ctx.beginPath();
+            ctx.ellipse(-4 * scale(), 0, 8 * scale(), 5 * scale(), 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            ctx.save();
+            ctx.rotate(-wingAng);
+            ctx.beginPath();
+            ctx.ellipse(4 * scale(), 0, 8 * scale(), 5 * scale(), 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            // Body
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 2 * scale(), 6 * scale(), 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (this.type === 'poof') {
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = alpha * 0.6;
+            ctx.beginPath();
+            ctx.arc(this.x * sx, this.y * sy, this.size * scale() * alpha, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+}
+
+// ============================================
+// BACKGROUND - Nature scene
+// ============================================
+function drawBackground() {
+    const w = canvas.width, h = canvas.height;
+    const tod = G.timeOfDay;
+    
+    // Sky
+    const sky = ctx.createLinearGradient(0, 0, 0, h);
+    if (tod < 0.25) { // Dawn
+        sky.addColorStop(0, '#FF8A65');
+        sky.addColorStop(0.4, '#FFCC80');
+        sky.addColorStop(0.7, '#81D4FA');
+        sky.addColorStop(1, '#4FC3F7');
+    } else if (tod < 0.5) { // Day
+        sky.addColorStop(0, '#4FC3F7');
+        sky.addColorStop(0.5, '#81D4FA');
+        sky.addColorStop(1, '#B3E5FC');
+    } else if (tod < 0.75) { // Dusk
+        sky.addColorStop(0, '#7E57C2');
+        sky.addColorStop(0.3, '#FF8A65');
+        sky.addColorStop(0.6, '#FFCC80');
+        sky.addColorStop(1, '#90A4AE');
+    } else { // Night
+        sky.addColorStop(0, '#1A237E');
+        sky.addColorStop(0.5, '#283593');
+        sky.addColorStop(1, '#3949AB');
+    }
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, h);
+    
+    // Stars at night
+    if (tod > 0.7) {
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        for (let i = 0; i < 50; i++) {
+            const sx = (Math.sin(i * 123.456) * 0.5 + 0.5) * w;
+            const sy = (Math.cos(i * 789.012) * 0.5 + 0.5) * h * 0.5;
+            const sr = 1 + Math.sin(Date.now() * 0.003 + i) * 0.5;
+            ctx.beginPath();
+            ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    // Sun/Moon
+    const celestialY = h * 0.15;
+    if (tod < 0.6) {
+        // Sun
+        const sunGrd = ctx.createRadialGradient(w * 0.8, celestialY, 0, w * 0.8, celestialY, 50 * scale());
+        sunGrd.addColorStop(0, '#FFF9C4');
+        sunGrd.addColorStop(0.3, '#FFEE58');
+        sunGrd.addColorStop(1, '#FFB300');
+        ctx.fillStyle = sunGrd;
+        ctx.beginPath();
+        ctx.arc(w * 0.8, celestialY, 40 * scale(), 0, Math.PI * 2);
+        ctx.fill();
+    } else if (tod > 0.7) {
+        // Moon
+        ctx.fillStyle = '#ECEFF1';
+        ctx.beginPath();
+        ctx.arc(w * 0.85, celestialY, 35 * scale(), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#CFD8DC';
+        ctx.beginPath();
+        ctx.arc(w * 0.85 - 5, celestialY - 5, 8 * scale(), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(w * 0.85 + 12, celestialY + 8, 5 * scale(), 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Distant mountains
+    ctx.fillStyle = tod > 0.6 ? '#37474F' : '#81C784';
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.65);
+    for (let x = 0; x <= w; x += w / 8) {
+        ctx.lineTo(x, h * (0.55 + Math.sin(x * 0.003) * 0.08 + Math.cos(x * 0.007) * 0.04));
+    }
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.fill();
+    
+    // Mid-ground hills
+    ctx.fillStyle = tod > 0.6 ? '#455A64' : '#66BB6A';
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.75);
+    for (let x = 0; x <= w; x += w / 10) {
+        ctx.lineTo(x, h * (0.7 + Math.sin(x * 0.005 + 1) * 0.05));
+    }
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.fill();
+    
+    // Ground
+    const groundY = VH * 0.92 * scaleY();
+    const groundGrd = ctx.createLinearGradient(0, groundY, 0, h);
+    groundGrd.addColorStop(0, '#558B2F');
+    groundGrd.addColorStop(0.2, '#689F38');
+    groundGrd.addColorStop(1, '#33691E');
+    ctx.fillStyle = groundGrd;
+    ctx.fillRect(0, groundY, w, h - groundY);
+    
+    // Grass tufts
+    ctx.strokeStyle = '#7CB342';
+    ctx.lineWidth = 2 * scale();
+    for (let x = 0; x < w; x += 25 * scale()) {
+        const grassH = (8 + Math.sin(x * 0.1 + Date.now() * 0.002) * 3) * scale();
+        ctx.beginPath();
+        ctx.moveTo(x, groundY);
+        ctx.quadraticCurveTo(x - 3, groundY - grassH * 0.6, x - 2, groundY - grassH);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, groundY);
+        ctx.quadraticCurveTo(x + 3, groundY - grassH * 0.6, x + 2, groundY - grassH);
+        ctx.stroke();
+    }
+    
+    // Draw ambient particles (leaves, butterflies)
+    for (const p of particles) {
+        if (p.type === 'leaf' || p.type === 'butterfly') p.draw();
+    }
+}
+
+function drawScore() {
+    const s = scale();
+    ctx.font = `bold ${52 * s}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillText(G.score, canvas.width/2 + 2*s, 70*s + 2*s);
+    ctx.fillStyle = 'white';
+    ctx.fillText(G.score, canvas.width/2, 70*s);
+}
+
+// ============================================
+// POWER-UP UI
+// ============================================
+function updatePowerupUI() {
+    const container = document.getElementById('powerupIndicator');
+    container.innerHTML = '';
+    const now = Date.now();
+    
+    // Immortal mode indicator (veer easter egg)
+    if (G.powerups.immortal.active) {
+        const div = document.createElement('div');
+        div.className = 'powerup-active';
+        div.style.background = 'rgba(255,215,0,0.3)';
+        div.style.border = '2px solid gold';
+        div.innerHTML = `👑 <span style="color:#FFD700;font-weight:bold;">${G.powerups.immortal.remaining} pts</span>`;
+        container.appendChild(div);
+    }
+    
+    for (const [effect, data] of Object.entries(G.powerups)) {
+        if (effect === 'immortal') continue; // Handled above
+        if (data.active && data.end > now) {
+            const treat = Object.values(TREATS).find(t => t.effect === effect);
+            if (!treat) continue;
+            const remain = data.end - now;
+            const total = treat.duration;
+            const pct = (remain / total) * 100;
+            
+            const div = document.createElement('div');
+            div.className = 'powerup-active';
+            div.innerHTML = `${treat.emoji}<div class="powerup-timer"><div class="powerup-timer-fill" style="width:${pct}%;background:${treat.color}"></div></div>`;
+            container.appendChild(div);
+        }
+    }
+}
+
+// ============================================
+// GAME LOGIC
+// ============================================
+function activateTreat(type) {
+    const treat = TREATS[type];
+    G.powerups[treat.effect].active = true;
+    G.powerups[treat.effect].end = Date.now() + treat.duration;
+    G.treatsCollected++;
+    Audio.play('treat');
+    
+    // Particles
+    for (let i = 0; i < 8; i++) {
+        particles.push(new Particle(bird.x, bird.y, 'poof'));
+    }
+}
+
+function updatePowerups() {
+    const now = Date.now();
+    for (const data of Object.values(G.powerups)) {
+        if (data.active && data.end <= now) data.active = false;
+    }
+}
+
+function updateDifficulty() {
+    const prog = Math.min(G.score / 50, 1);
+    G.treeSpeed = G.baseSpeed + prog * 1.5;
+    G.treeGap = 180 - prog * 50;
+    G.treeInterval = 2200 - prog * 700;
+}
+
+function updateEnvironment() {
+    G.timeOfDay += 0.00006;
+    if (G.timeOfDay > 1) G.timeOfDay = 0;
+    
+    // Spawn leaves
+    if (Math.random() < 0.02) {
+        particles.push(new Particle(VW + 20, Math.random() * VH * 0.7, 'leaf'));
+    }
+    
+    // Spawn butterflies
+    if (Math.random() < 0.003 && G.timeOfDay < 0.7) {
+        particles.push(new Particle(VW + 20, VH * 0.3 + Math.random() * VH * 0.4, 'butterfly'));
+    }
+}
+
+let lastTreeTime = 0;
+
+function update(ts) {
+    if (G.state !== 'playing') return;
+    
+    G.playTime = Date.now() - G.startTime;
+    
+    bird.update();
+    
+    // Ground collision
+    const groundY = VH * 0.88;
+    if (bird.y > groundY) {
+        bird.y = groundY; 
+        bird.vel = bird.jump;
+        
+        if (G.powerups.immortal.active) {
+            // Immortal - golden bounce
+            Audio.play('shield');
+            for (let j = 0; j < 6; j++) {
+                const p = new Particle(bird.x, bird.y, 'poof');
+                p.color = '#FFD700';
+                particles.push(p);
+            }
+        } else if (G.powerups.shield.active) {
+            // Shield protects once
+            Audio.play('shield');
+            G.powerups.shield.active = false;
+        } else {
+            // No protection - die
+            gameOver(); 
+            return;
+        }
+    }
+    // Ceiling
+    if (bird.y < bird.h/2) { bird.y = bird.h/2; bird.vel = 0; }
+    
+    // Spawn trees
+    if (ts - lastTreeTime > G.treeInterval) {
+        trees.push(new Tree());
+        lastTreeTime = ts;
+    }
+    
+    // Update trees
+    for (let i = trees.length - 1; i >= 0; i--) {
+        const tree = trees[i];
+        if (!tree.update()) { trees.splice(i, 1); continue; }
+        
+        // Collision
+        if (tree.collides()) {
+            if (G.powerups.immortal.active) {
+                // Immortal - just pass through with golden particles
+                Audio.play('shield');
+                for (let j = 0; j < 8; j++) {
+                    const p = new Particle(bird.x, bird.y, 'poof');
+                    p.color = '#FFD700';
+                    particles.push(p);
+                }
+                // Mark as scored so we don't keep colliding
+                tree.scored = true;
+            } else if (G.powerups.shield.active) {
+                // Shield protects once
+                Audio.play('shield');
+                G.powerups.shield.active = false;
+                for (let j = 0; j < 10; j++) {
+                    particles.push(new Particle(bird.x, bird.y, 'poof'));
+                }
+            } else { 
+                // No protection - die
+                gameOver(); 
+                return; 
+            }
+        }
+        
+        // Treat
+        const treat = tree.checkTreat();
+        if (treat) activateTreat(treat);
+        
+        // Score
+        if (!tree.scored && tree.x + tree.w/2 < bird.x) {
+            tree.scored = true;
+            const pts = G.powerups.double.active ? 2 : 1;
+            G.score += pts;
+            G.treesCleared++;
+            Audio.play('score');
+            particles.push(new Particle(bird.x, bird.y - 30, 'score'));
+            
+            // Decrease immortal counter
+            if (G.powerups.immortal.active) {
+                G.powerups.immortal.remaining -= pts;
+                if (G.powerups.immortal.remaining <= 0) {
+                    G.powerups.immortal.active = false;
+                    G.powerups.immortal.remaining = 0;
+                }
+            }
+        }
+    }
+    
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        if (!particles[i].update()) particles.splice(i, 1);
+    }
+    
+    // Update floating treats (birb easter egg)
+    for (let i = floatingTreats.length - 1; i >= 0; i--) {
+        const ft = floatingTreats[i];
+        if (!ft.update()) { 
+            floatingTreats.splice(i, 1); 
+            continue; 
+        }
+        const treat = ft.checkCollision();
+        if (treat) {
+            activateTreat(treat);
+            floatingTreats.splice(i, 1);
+        }
+    }
+    
+    updatePowerups();
+    updatePowerupUI();
+    updateDifficulty();
+    updateEnvironment();
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
+    for (const tree of trees) tree.draw();
+    for (const ft of floatingTreats) ft.draw();
+    for (const p of particles) { 
+        if (p.type !== 'leaf' && p.type !== 'butterfly') p.draw(); 
+    }
+    bird.draw();
+    if (G.state === 'playing') drawScore();
+}
+
+function gameLoop(ts) {
+    update(ts);
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// ============================================
+// STATE MANAGEMENT
+// ============================================
+function startGame() {
+    Audio.init();
+    G.state = 'playing';
+    G.score = 0;
+    G.treesCleared = 0;
+    G.treatsCollected = 0;
+    G.startTime = Date.now();
+    lastTreeTime = performance.now();
+    G.treeSpeed = G.baseSpeed;
+    G.treeGap = 180;
+    G.treeInterval = 2200;
+    
+    for (const k of Object.keys(G.powerups)) {
+        G.powerups[k].active = false;
+        G.powerups[k].end = 0;
+        if (k === 'immortal') G.powerups[k].remaining = 0;
+    }
+    
+    trees.length = 0;
+    floatingTreats.length = 0;
+    birbBuffer = '';
+    veerBuffer = '';
+    // Keep ambient particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        if (particles[i].type !== 'leaf' && particles[i].type !== 'butterfly') {
+            particles.splice(i, 1);
+        }
+    }
+    bird.reset();
+    
+    document.getElementById('startScreen').classList.add('screen-hidden');
+    document.getElementById('gameOverScreen').classList.add('screen-hidden');
+    document.getElementById('pauseScreen').classList.add('screen-hidden');
+    document.getElementById('pauseBtn').classList.remove('hidden');
+    document.getElementById('powerupIndicator').innerHTML = '';
+}
+
+function pauseGame() {
+    if (G.state === 'playing') {
+        G.state = 'paused';
+        document.getElementById('pauseScreen').classList.remove('screen-hidden');
+        document.getElementById('pauseBtn').textContent = '▶️';
+    }
+}
+
+function resumeGame() {
+    if (G.state === 'paused') {
+        G.state = 'playing';
+        document.getElementById('pauseScreen').classList.add('screen-hidden');
+        document.getElementById('pauseBtn').textContent = '⏸️';
+    }
+}
+
+function gameOver() {
+    G.state = 'gameover';
+    Audio.play('hit');
+    
+    // Feather explosion
+    for (let i = 0; i < 15; i++) {
+        particles.push(new Particle(bird.x, bird.y, 'feather'));
+    }
+    
+    const isRecord = G.score > G.highScore;
+    if (isRecord) {
+        G.highScore = G.score;
+        localStorage.setItem('bg4NatureHigh', G.highScore);
+    }
+    
+    document.getElementById('finalScore').textContent = G.score;
+    const hsText = document.getElementById('highScoreText');
+    hsText.textContent = `Best: ${G.highScore}`;
+    hsText.classList.toggle('new-record', isRecord);
+    
+    document.getElementById('statTrees').textContent = G.treesCleared;
+    document.getElementById('statTreats').textContent = G.treatsCollected;
+    document.getElementById('statTime').textContent = Math.floor(G.playTime / 1000) + 's';
+    
+    const msgs = [
+        "Beautiful flight! Nature heals, and so will you! 🌿",
+        "Amazing journey through the forest, Alex! 🌲",
+        "You soared like a true bird! Rest and fly again! 🕊️",
+        "Every tree passed is progress — just like recovery! 🌳",
+        "The forest cheers for you, Alex! 🌸"
+    ];
+    
+    let msg = msgs[Math.floor(Math.random() * msgs.length)];
+    if (G.score >= 50) msg = "LEGENDARY! You're one with nature, Alex! 🦅👑";
+    else if (G.score >= 25) msg = "AMAZING! The forest spirits celebrate you! 🌟🌿";
+    document.getElementById('encouragement').textContent = msg;
+    
+    setTimeout(() => {
+        document.getElementById('gameOverScreen').classList.remove('screen-hidden');
+        document.getElementById('pauseBtn').classList.add('hidden');
+    }, 500);
+}
+
+function showMenu() {
+    G.state = 'start';
+    document.getElementById('gameOverScreen').classList.add('screen-hidden');
+    document.getElementById('pauseScreen').classList.add('screen-hidden');
+    document.getElementById('startScreen').classList.remove('screen-hidden');
+    document.getElementById('pauseBtn').classList.add('hidden');
+    bird.reset();
+    trees.length = 0;
+    updateSkinSelector();
+}
+
+// ============================================
+// BIRD SELECTOR
+// ============================================
+function updateSkinSelector() {
+    const container = document.getElementById('skinSelector');
+    container.innerHTML = '';
+    
+    for (const b of BIRDS) {
+        const btn = document.createElement('button');
+        btn.className = 'skin-btn';
+        btn.textContent = b.emoji;
+        btn.title = `${b.name} (Unlock: ${b.unlock} pts)`;
+        
+        const unlocked = G.highScore >= b.unlock;
+        if (!unlocked) btn.classList.add('locked');
+        else if (b.id === G.bird) btn.classList.add('selected');
+        
+        btn.addEventListener('click', () => {
+            if (unlocked) {
+                G.bird = b.id;
+                localStorage.setItem('bg4NatureBird', b.id);
+                updateSkinSelector();
+            }
+        });
+        container.appendChild(btn);
+    }
+    
+    const next = BIRDS.find(b => G.highScore < b.unlock);
+    document.getElementById('skinRequirement').textContent = next 
+        ? `Next: ${next.name} at ${next.unlock} pts`
+        : 'All birds unlocked! 🎉';
+}
+
+// ============================================
+// INPUT
+// ============================================
+function handleInput(e) {
+    e.preventDefault();
+    Audio.init();
+    if (G.state === 'playing') bird.flap();
+}
+
+canvas.addEventListener('click', handleInput);
+canvas.addEventListener('touchstart', handleInput);
+
+document.addEventListener('keydown', (e) => {
+    // Easter egg: typing "birb" spawns a random treat
+    if (G.state === 'playing') {
+        const key = e.key.toLowerCase();
+        if (key.length === 1 && key >= 'a' && key <= 'z') {
+            birbBuffer += key;
+            if (birbBuffer.length > 4) {
+                birbBuffer = birbBuffer.slice(-4);
+            }
+            if (birbBuffer === BIRB_CODE) {
+                // Spawn a floating treat!
+                floatingTreats.push(new FloatingTreat());
+                birbBuffer = '';
+                // Little celebration
+                for (let i = 0; i < 5; i++) {
+                    particles.push(new Particle(bird.x, bird.y, 'poof'));
+                }
+                Audio.play('treat');
+            }
+            
+            // Easter egg: typing "veer" gives immortality for 10 points
+            veerBuffer += key;
+            if (veerBuffer.length > 4) {
+                veerBuffer = veerBuffer.slice(-4);
+            }
+            if (veerBuffer === VEER_CODE) {
+                // Activate immortal mode for 10 points! Costs nothing.
+                G.powerups.immortal.active = true;
+                G.powerups.immortal.remaining = 10;
+                veerBuffer = '';
+                // Golden celebration
+                for (let i = 0; i < 12; i++) {
+                    const p = new Particle(bird.x, bird.y, 'poof');
+                    p.color = '#FFD700';
+                    particles.push(p);
+                }
+                Audio.play('treat');
+                Audio.play('score');
+            }
+        }
+    }
+    
+    if (e.code === 'Space') {
+        e.preventDefault();
+        Audio.init();
+        if (G.state === 'playing') bird.flap();
+        else if (G.state === 'start') startGame();
+        else if (G.state === 'gameover') startGame();
+        else if (G.state === 'paused') resumeGame();
+    } else if (e.code === 'Escape' || e.code === 'KeyP') {
+        if (G.state === 'playing') pauseGame();
+        else if (G.state === 'paused') resumeGame();
+    }
+});
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('restartBtn').addEventListener('click', startGame);
+document.getElementById('menuBtn').addEventListener('click', showMenu);
+document.getElementById('resumeBtn').addEventListener('click', resumeGame);
+document.getElementById('quitBtn').addEventListener('click', showMenu);
+document.getElementById('muteBtn').addEventListener('click', () => Audio.toggle());
+document.getElementById('pauseBtn').addEventListener('click', () => {
+    if (G.state === 'playing') pauseGame();
+    else if (G.state === 'paused') resumeGame();
+});
+
+// ============================================
+// INIT
+// ============================================
+document.getElementById('muteBtn').textContent = Audio.muted ? '🔇' : '🔊';
+updateSkinSelector();
+
+// Initial ambient particles
+for (let i = 0; i < 8; i++) {
+    particles.push(new Particle(Math.random() * VW, Math.random() * VH * 0.6, 'leaf'));
+}
+for (let i = 0; i < 2; i++) {
+    particles.push(new Particle(Math.random() * VW, VH * 0.3 + Math.random() * VH * 0.3, 'butterfly'));
+}
+
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
