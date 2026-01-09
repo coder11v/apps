@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SmartScrape</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    h1, h2 {
+      margin-bottom: 0.5em;
+    }
+
+    section {
+      margin-bottom: 40px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    pre {
+      background: #f6f6f6;
+      padding: 15px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      border-radius: 6px;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧠 SmartScrape</h1>
+  <p class="hint">
+    Fetch raw HTML → format with Gemini 3 Flash.
+    BYO Gemini key. Rate-limited via SmartScrape API key.
+  </p>
+
+  <!-- ================= SIGNUP ================= -->
+
+  <section>
+    <h2>1️⃣ Get a SmartScrape API Key</h2>
+
+    <form id="signup">
+      <input
+        name="email"
+        type="email"
+        placeholder="Email address"
+        required
+      />
+      <button>Create API Key</button>
+    </form>
+
+    <pre id="signupOutput"></pre>
+  </section>
+
+  <!-- ================= SCRAPE TEST ================= -->
+
+  <section>
+    <h2>2️⃣ Test the Scrape API</h2>
+
+    <input
+      id="apiKey"
+      placeholder="SmartScrape API Key (ss_live_...)"
+    />
+
+    <input
+      id="geminiKey"
+      placeholder="Your Gemini API Key"
+    />
+
+    <input
+      id="targetUrl"
+      placeholder="Target URL (https://example.com)"
+    />
+
+    <textarea
+      id="instructions"
+      placeholder="Instructions (e.g. Return title and summary as JSON)"
+    ></textarea>
+
+    <button id="runScrape">Run Scrape</button>
+
+    <pre id="scrapeOutput"></pre>
+  </section>
+
+  <script>
+    const BASE_URL = "https://smartscrape.veerbajaj11.workers.dev";
+
+    // ---------- SIGNUP ----------
+    document.getElementById("signup").onsubmit = async (e) => {
+      e.preventDefault();
+
+      const email = e.target.email.value;
+      const out = document.getElementById("signupOutput");
+
+      out.textContent = "Creating API key...";
+
+      try {
+        const res = await fetch(`${BASE_URL}/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+
+        // Auto-fill API key field
+        if (data.api_key) {
+          document.getElementById("apiKey").value = data.api_key;
+        }
+      } catch (err) {
+        out.textContent = "Signup failed.";
+      }
+    };
+
+    // ---------- SCRAPE ----------
+    document.getElementById("runScrape").onclick = async () => {
+      const apiKey = document.getElementById("apiKey").value;
+      const geminiKey = document.getElementById("geminiKey").value;
+      const url = document.getElementById("targetUrl").value;
+      const instructions = document.getElementById("instructions").value;
+
+      const out = document.getElementById("scrapeOutput");
+      out.textContent = "Running scrape...";
+
+      if (!apiKey || !geminiKey || !url) {
+        out.textContent = "Missing required fields.";
+        return;
+      }
+
+      try {
+        const params = new URLSearchParams({
+          url,
+          q: instructions,
+          api_key: apiKey,
+          gemini_key: geminiKey
+        });
+
+        const res = await fetch(`${BASE_URL}/scrape?${params}`);
+        const data = await res.json();
+
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.textContent = "Scrape failed.";
+      }
+    };
+  </script>
+
+</body>
+</html>
