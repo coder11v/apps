@@ -267,6 +267,12 @@
       font-family: 'Inter', sans-serif;
     }
 
+    .markdown-output {
+      font-family: 'Inter', sans-serif;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
     .placeholder {
       color: #64748b;
       font-style: italic;
@@ -404,7 +410,7 @@
 <body>
   <header>
     <h1>DocExtract</h1>
-    <p>Convert Google Docs to clean text or HTML</p>
+    <p>Convert Google Docs to clean text, HTML, or Markdown</p>
   </header>
 
   <main>
@@ -422,6 +428,7 @@
         <select id="format">
           <option value="text">📄 Plain Text</option>
           <option value="html">🌐 HTML</option>
+          <option value="markdown">📝 Markdown</option>
         </select>
       </div>
       <button id="fetchBtn">Convert</button>
@@ -455,6 +462,20 @@
           <div class="placeholder">Output will appear here</div>
         </div>
       </div>
+
+      <!-- Markdown Output Panel -->
+      <div class="output-panel" id="markdownPanel" style="display: none;">
+        <div class="output-header">
+          <h3>📝 Markdown Output</h3>
+          <div class="copy-buttons">
+            <button class="copy-btn" data-target="markdownContent" title="Copy markdown">Copy Markdown</button>
+            <button class="copy-btn" data-target="markdownCode" title="Copy raw code">Copy Code</button>
+          </div>
+        </div>
+        <div class="output-content markdown-output" id="markdownContent">
+          <div class="placeholder">Output will appear here</div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -468,12 +489,15 @@
     const formatSelect = document.getElementById('format');
     const textPanel = document.getElementById('textPanel');
     const htmlPanel = document.getElementById('htmlPanel');
+    const markdownPanel = document.getElementById('markdownPanel');
     const textContent = document.getElementById('textContent');
     const htmlContent = document.getElementById('htmlContent');
+    const markdownContent = document.getElementById('markdownContent');
 
     // Format-specific content storage
     let textRawData = '';
     let htmlRawData = '';
+    let markdownRawData = '';
 
     // Copy to clipboard with toast notification
     function copyToClipboard(text, label) {
@@ -497,18 +521,24 @@
     document.addEventListener('click', (e) => {
       if (e.target.classList.contains('copy-btn')) {
         const target = e.target.dataset.target;
-        const isText = target.startsWith('text');
-        const label = e.target.textContent;
+        let textToCopy = '';
+        let label = e.target.textContent;
 
         if (target === 'textContent') {
-          copyToClipboard(textRawData, label);
+          textToCopy = textRawData;
         } else if (target === 'textCode') {
-          copyToClipboard(textContent.textContent, label);
+          textToCopy = textContent.textContent;
         } else if (target === 'htmlContent') {
-          copyToClipboard(htmlRawData, label);
+          textToCopy = htmlRawData;
         } else if (target === 'htmlCode') {
-          copyToClipboard(htmlContent.innerHTML, label);
+          textToCopy = htmlContent.innerHTML;
+        } else if (target === 'markdownContent') {
+          textToCopy = markdownRawData;
+        } else if (target === 'markdownCode') {
+          textToCopy = markdownContent.textContent;
         }
+
+        copyToClipboard(textToCopy, label);
 
         // Visual feedback
         e.target.classList.add('copied');
@@ -529,11 +559,23 @@
         return;
       }
 
-      const activePanel = format === 'text' ? textPanel : htmlPanel;
-      const activeContent = format === 'text' ? textContent : htmlContent;
-
+      // Hide all panels and show the active one
       textPanel.style.display = 'none';
       htmlPanel.style.display = 'none';
+      markdownPanel.style.display = 'none';
+
+      let activePanel, activeContent;
+      if (format === 'text') {
+        activePanel = textPanel;
+        activeContent = textContent;
+      } else if (format === 'html') {
+        activePanel = htmlPanel;
+        activeContent = htmlContent;
+      } else if (format === 'markdown') {
+        activePanel = markdownPanel;
+        activeContent = markdownContent;
+      }
+
       activePanel.style.display = 'flex';
 
       // Show loading state
@@ -553,9 +595,12 @@
         if (format === 'text') {
           textRawData = data || 'No text found.';
           activeContent.textContent = textRawData;
-        } else {
+        } else if (format === 'html') {
           htmlRawData = data || '<i>No content found.</i>';
           activeContent.innerHTML = htmlRawData;
+        } else if (format === 'markdown') {
+          markdownRawData = data || 'No markdown content found.';
+          activeContent.textContent = markdownRawData;
         }
 
         showToast('✓ Conversion successful!');
