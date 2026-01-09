@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocExtract – Google Doc Converter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+      padding: 2.5rem 1rem;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      letter-spacing: -1px;
+    }
+
+    header p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      font-weight: 300;
+    }
+
+    main {
+      position: relative;
+      z-index: 10;
+      max-width: 1100px;
+      width: 90%;
+      margin: 3rem auto;
+    }
+
+    .input-section {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"],
+    select {
+      padding: 1rem;
+      font-size: 1rem;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1.5px solid rgba(71, 85, 105, 0.4);
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #60a5fa;
+      background: rgba(30, 41, 59, 0.8);
+      box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+    }
+
+    input[type="text"]::placeholder {
+      color: #64748b;
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2360a5fa' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+    }
+
+    button:active::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .output-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .output-panel {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid rgba(71, 85, 105, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      max-height: 65vh;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .output-panel:hover {
+      border-color: rgba(96, 165, 250, 0.4);
+      box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
+    }
+
+    .output-header {
+      padding: 1rem;
+      background: rgba(30, 41, 59, 0.8);
+      border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .output-header h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .copy-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .copy-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      background: rgba(96, 165, 250, 0.2);
+      border: 1px solid rgba(96, 165, 250, 0.5);
+      border-radius: 6px;
+      color: #60a5fa;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .copy-btn:hover {
+      background: rgba(96, 165, 250, 0.3);
+      border-color: #60a5fa;
+      box-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+    }
+
+    .copy-btn.copied {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: #22c55e;
+      color: #22c55e;
+    }
+
+    .output-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .text-output {
+      font-family: 'Courier Prime', monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .html-output {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .placeholder {
+      color: #64748b;
+      font-style: italic;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      color: #60a5fa;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(96, 165, 250, 0.3);
+      border-top: 2px solid #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 3px solid #ef4444;
+      padding: 1rem;
+      border-radius: 6px;
+      color: #fca5a5;
+      font-size: 0.95rem;
+    }
+
+    /* Scrollbar styling */
+    .output-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .output-content::-webkit-scrollbar-track {
+      background: rgba(30, 41, 59, 0.4);
+    }
+
+    .output-content::-webkit-scrollbar-thumb {
+      background: rgba(96, 165, 250, 0.5);
+      border-radius: 4px;
+    }
+
+    .output-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(96, 165, 250, 0.7);
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: #60a5fa;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: #a78bfa;
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      header h1 {
+        font-size: 2rem;
+      }
+
+      .input-section {
+        grid-template-columns: 1fr;
+      }
+
+      .output-section {
+        grid-template-columns: 1fr;
+      }
+
+      .output-panel {
+        max-height: 50vh;
+      }
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: rgba(34, 197, 94, 0.9);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+      animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
+      z-index: 1000;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DocExtract</h1>
+    <p>Convert Google Docs to clean text or HTML</p>
+  </header>
+
+  <main>
+    <div class="input-section">
+      <div class="form-group" style="flex: 1;">
+        <label for="docUrl">Google Doc URL or ID</label>
+        <input 
+          type="text" 
+          id="docUrl" 
+          placeholder="Paste your Google Doc link here..." 
+        />
+      </div>
+      <div class="form-group">
+        <label for="format">Format</label>
+        <select id="format">
+          <option value="text">📄 Plain Text</option>
+          <option value="html">🌐 HTML</option>
+        </select>
+      </div>
+      <button id="fetchBtn">Convert</button>
+    </div>
+
+    <div class="output-section">
+      <!-- Text Output Panel -->
+      <div class="output-panel" id="textPanel" style="display: none;">
+        <div class="output-header">
+          <h3>📄 Text Output</h3>
+          <div class="copy-buttons">
+            <button class="copy-btn" data-target="textContent" title="Copy as plain text">Copy Text</button>
+            <button class="copy-btn" data-target="textCode" title="Copy raw code">Copy Code</button>
+          </div>
+        </div>
+        <div class="output-content text-output" id="textContent">
+          <div class="placeholder">Output will appear here</div>
+        </div>
+      </div>
+
+      <!-- HTML Output Panel -->
+      <div class="output-panel" id="htmlPanel" style="display: none;">
+        <div class="output-header">
+          <h3>🌐 HTML Output</h3>
+          <div class="copy-buttons">
+            <button class="copy-btn" data-target="htmlContent" title="Copy as rendered HTML">Copy Rendered</button>
+            <button class="copy-btn" data-target="htmlCode" title="Copy raw HTML code">Copy Code</button>
+          </div>
+        </div>
+        <div class="output-content html-output" id="htmlContent">
+          <div class="placeholder">Output will appear here</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Powered by <a href="https://googledoctotxt.veerbajaj11.workers.dev" target="_blank">GoogleDocToText API</a>
+  </footer>
+
+  <script>
+    const btn = document.getElementById('fetchBtn');
+    const input = document.getElementById('docUrl');
+    const formatSelect = document.getElementById('format');
+    const textPanel = document.getElementById('textPanel');
+    const htmlPanel = document.getElementById('htmlPanel');
+    const textContent = document.getElementById('textContent');
+    const htmlContent = document.getElementById('htmlContent');
+
+    // Format-specific content storage
+    let textRawData = '';
+    let htmlRawData = '';
+
+    // Copy to clipboard with toast notification
+    function copyToClipboard(text, label) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`${label} copied to clipboard!`);
+      }).catch(() => {
+        alert('Failed to copy. Please try again.');
+      });
+    }
+
+    // Show toast notification
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Copy button handlers
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('copy-btn')) {
+        const target = e.target.dataset.target;
+        const isText = target.startsWith('text');
+        const label = e.target.textContent;
+
+        if (target === 'textContent') {
+          copyToClipboard(textRawData, label);
+        } else if (target === 'textCode') {
+          copyToClipboard(textContent.textContent, label);
+        } else if (target === 'htmlContent') {
+          copyToClipboard(htmlRawData, label);
+        } else if (target === 'htmlCode') {
+          copyToClipboard(htmlContent.innerHTML, label);
+        }
+
+        // Visual feedback
+        e.target.classList.add('copied');
+        e.target.textContent = '✓ Copied!';
+        setTimeout(() => {
+          e.target.classList.remove('copied');
+          e.target.textContent = label;
+        }, 1500);
+      }
+    });
+
+    btn.addEventListener('click', async () => {
+      const url = input.value.trim();
+      const format = formatSelect.value;
+
+      if (!url) {
+        showToast('⚠️ Please enter a Google Doc URL or ID');
+        return;
+      }
+
+      const activePanel = format === 'text' ? textPanel : htmlPanel;
+      const activeContent = format === 'text' ? textContent : htmlContent;
+
+      textPanel.style.display = 'none';
+      htmlPanel.style.display = 'none';
+      activePanel.style.display = 'flex';
+
+      // Show loading state
+      activeContent.innerHTML = '<div class="loading"><div class="spinner"></div><span>Converting...</span></div>';
+
+      btn.disabled = true;
+      btn.textContent = 'Converting...';
+
+      try {
+        const apiUrl = `https://googledoctotxt.veerbajaj11.workers.dev/?url=${encodeURIComponent(url)}&format=${format}`;
+        const res = await fetch(apiUrl);
+
+        if (!res.ok) throw new Error(`API Error ${res.status}`);
+
+        const data = await res.text();
+
+        if (format === 'text') {
+          textRawData = data || 'No text found.';
+          activeContent.textContent = textRawData;
+        } else {
+          htmlRawData = data || '<i>No content found.</i>';
+          activeContent.innerHTML = htmlRawData;
+        }
+
+        showToast('✓ Conversion successful!');
+      } catch (err) {
+        const errorMsg = `⚠️ Error: ${err.message}`;
+        activeContent.innerHTML = `<div class="error">${errorMsg}</div>`;
+        showToast('❌ Conversion failed');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Convert';
+      }
+    });
+
+    // Allow Enter key to submit
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        btn.click();
+      }
+    });
+  </script>
+</body>
+</html>
