@@ -1,10 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>ViB Suite | Dashboard</title>
+    <!-- Access Control Check -->
+    <script>
+        (function () {
+            const isFromApp = navigator.userAgent.includes('ViBSuite');
+            const isBypassed = localStorage.getItem('vib_bypass') === 'true';
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+            // Allow access if from app OR if bypassed OR if we are already on /download (to avoid loops)
+            if (!isFromApp && !isBypassed && !isLocalhost && !window.location.pathname.startsWith('/download')) {
+                window.location.href = '/download';
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #030303;
+            --card-bg: rgba(20, 20, 20, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #00ff88;
+            --accent-secondary: #00d2ff;
+            --banana-primary: #f7d046;
+            --banana-secondary: #e6b800;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,387 +43,382 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0a0a;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.05) 0%, transparent 40%);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
             -webkit-app-region: drag;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 60px 24px;
+            width: 100%;
             -webkit-app-region: no-drag;
         }
 
         header {
             text-align: center;
-            margin-bottom: 60px;
-            padding-top: 40px;
+            margin-bottom: 80px;
+            animation: fadeInDown 0.8s ease-out;
         }
 
         h1 {
-            color: #ffffff;
-            font-size: 3.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(3rem, 8vw, 4.5rem);
             font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: none;
+            background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+            letter-spacing: -2px;
         }
 
         .subtitle {
-            color: #a0a0a0;
-            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
             font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
         }
 
         .card {
-            background: #1a1a1a;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 32px;
             position: relative;
             overflow: hidden;
-            border: 1px solid #2a2a2a;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            animation: fadeInUp 0.6s ease-out both;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
-            border-color: #3a3a3a;
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(30, 30, 30, 0.8);
         }
 
-        .card::before {
+        .card::after {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            height: 5px;
-            background: #3a3a3a;
-        }
-
-        .card.banana::before {
-            background: linear-gradient(90deg, #f7d046, #e6b800);
-        }
-
-        .card-header {
-            margin-bottom: 20px;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent);
+            pointer-events: none;
         }
 
         .card-icon {
-            width: 60px;
-            height: 60px;
-            background: #2a2a2a;
-            border-radius: 12px;
+            font-size: 2.5rem;
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
-            font-size: 28px;
-            border: 1px solid #3a3a3a;
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .card-title {
-            font-size: 1.8rem;
-            color: #ffffff;
-            margin-bottom: 10px;
+        .card-content h2 {
+            font-size: 1.5rem;
             font-weight: 600;
+            margin-bottom: 12px;
+            font-family: 'Outfit', sans-serif;
         }
 
         .card-description {
-            color: #a0a0a0;
-            font-size: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
             line-height: 1.6;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
         }
 
         .badge {
-            display: inline-block;
-            padding: 6px 16px;
-            background: #2a2a2a;
-            color: #ffa500;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 99px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border: 1px solid #3a3a3a;
+            border: 1px solid currentColor;
         }
 
-        .badge.available {
-            background: #1a3a1a;
+        .badge-beta {
+            color: #facc15;
+        }
+
+        .badge-live {
             color: #4ade80;
-            border-color: #2a4a2a;
         }
 
-        .badge.in-progress {
-            background: #3a2a1a;
-            color: #fbbf24;
-            border-color: #4a3a2a;
+        .badge-soon {
+            color: #60a5fa;
         }
 
         .btn {
-            display: inline-block;
-            padding: 12px 30px;
             background: #ffffff;
-            color: #0a0a0a;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 12px;
             text-decoration: none;
-            border-radius: 8px;
             font-weight: 600;
-            transition: background 0.3s ease;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-align: center;
         }
 
         .btn:hover {
-            background: #e0e0e0;
+            transform: scale(1.05);
+            background: #e5e5e5;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #3a3a3a;
-            color: #6a6a6a;
+        .btn-banana {
+            background: linear-gradient(135deg, var(--banana-primary), var(--banana-secondary));
+            color: #000;
         }
 
-        .btn.banana-btn {
-            background: linear-gradient(135deg, #f7d046, #e6b800);
-            color: #1a1a1a;
+        .btn-banana:hover {
+            box-shadow: 0 0 20px rgba(247, 208, 70, 0.3);
         }
 
-        .btn.banana-btn:hover {
-            background: linear-gradient(135deg, #ffe066, #f7d046);
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: transparent;
-            color: #a0a0a0;
-            border: 1px solid #3a3a3a;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            margin-bottom: 30px;
-        }
-
-        .back-btn:hover {
-            background: #1a1a1a;
-            color: #ffffff;
-            border-color: #4a4a4a;
-        }
-
-        .coming-soon {
-            opacity: 0.7;
-        }
-
-        footer {
-            text-align: center;
-            color: white;
-            padding: 30px 0;
-            font-size: 0.9rem;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
+        /* Access indicators */
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: #48bb78;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
+            display: inline-block;
+            margin-right: 6px;
         }
 
-        .status-indicator.coming {
-            background: #ed8936;
+        .status-dot.online {
+            background: #4ade80;
+            box-shadow: 0 0 10px #4ade80;
         }
 
-        .status-indicator.in-progress {
-            background: #fbbf24;
+        .status-dot.offline {
+            background: #f87171;
         }
 
-        .menu {
-            display: none;
-        }
-
-        .menu.active {
-            display: block;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
+        /* Animations */
+        @keyframes fadeInDown {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            50% {
-                opacity: 0.5;
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
+        .card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .card:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        .card:nth-child(7) {
+            animation-delay: 0.7s;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
+            .container {
+                padding: 40px 16px;
+            }
+
+            header {
+                margin-bottom: 40px;
             }
 
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
-
-            .card {
-                padding: 30px;
-            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <!-- Main Menu -->
-        <div id="main-menu" class="menu active">
-            <header>
-                <h1>Vib Suite</h1>
-                <p class="subtitle">Your productivity toolkit</p>
-            </header>
+        <header>
+            <h1>ViB Suite</h1>
+            <p class="subtitle">A curated collection of productivity tools and creative experiments.</p>
+        </header>
 
-            <div class="dashboard-grid">
-                <div class="card coming-soon">
-                    <div class="card-header">
-                        <div class="card-icon">📧</div>
-                        <h2 class="card-title">iMessage Summarizer</h2>
-                    </div>
-                    <p class="card-description">
-                        Quickly summarize long messages and group chats. Get the key points without reading through everything.
-                    </p>
-                    <div style="margin-bottom: 20px;">
-                        <span class="badge"><span class="status-indicator coming"></span>Coming Soon</span>
-                    </div>
-                    <button class="btn" disabled>Launch App</button>
+        <div class="dashboard-grid">
+            <!-- Banana Ballers (Direct Link) -->
+            <div class="card" style="border-color: rgba(247, 208, 70, 0.3);">
+                <div class="card-icon" style="background: rgba(247, 208, 70, 0.1);">🍌</div>
+                <div class="card-content">
+                    <h2>Banana Ballers</h2>
+                    <p class="card-description">Official Banana Ballers app portal. Creative movies, games, and team
+                        projects.</p>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">📊</div>
-                        <h2 class="card-title">Grades Summarizer</h2>
-                    </div>
-                    <p class="card-description">
-                        Analyze and visualize your academic performance. Track trends and insights from your grades data.
-                    </p>
-                    <div style="margin-bottom: 20px;">
-                        <span class="badge available"><span class="status-indicator"></span>In Beta</span>
-                    </div>
-                    <a href="https://apps.veerbajaj.com/grades" class="btn" target="_blank">Launch Now</a>
-                </div>
-
-                <div class="card banana">
-                    <div class="card-header">
-                        <div class="card-icon">🍌⚽</div>
-                        <h2 class="card-title">Banana Ballers Projects</h2>
-                    </div>
-                    <p class="card-description">
-                        Explore creative projects from the Banana Ballers team. Movies, games, and more exciting stuff!
-                    </p>
-                    <div style="margin-bottom: 20px;">
-                        <span class="badge available"><span class="status-indicator"></span>available to general public</span>
-                    </div>
-                    <button class="btn banana-btn" onclick="showMenu('banana-menu')">Open Menu</button>
+                <div class="card-footer">
+                    <span class="badge badge-live"><span class="status-dot online"></span>Active</span>
+                    <a href="http://app.bananaballers.run.place/" class="btn btn-banana">Launch App</a>
                 </div>
             </div>
 
-            <footer>
-                <p>&copy; 2025 ViB Suite. All rights reserved.</p>
-            </footer>
-        </div>
-
-        <!-- Banana Ballers Menu -->
-        <div id="banana-menu" class="menu">
-            <header>
-                <h1>🍌 Banana Ballers</h1>
-                <p class="subtitle">Creative projects from the team. (Note: Banana Ballers apps are beta.)</p>
-            </header>
-
-            <button class="back-btn" onclick="showMenu('main-menu')">
-                ← Back to Main Menu
-            </button>
-
-            <div class="dashboard-grid">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">🎬</div>
-                        <h2 class="card-title">Movie Explainer</h2>
-                    </div>
-                    <p class="card-description">
-                        Get detailed explanations and breakdowns of anything from characters in your favorite movies. (John Knowles)
-                    </p>
-                    <div style="margin-bottom: 20px;">
-                        <span class="badge in-progress"><span class="status-indicator in-progress"></span>In Progress</span>
-                    </div>
-                    <button class="btn" disabled>Coming Soon</button>
+            <!-- Grades Summarizer -->
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <div class="card-content">
+                    <h2>Grades Summarizer</h2>
+                    <p class="card-description">Advanced analytics for your academic performance. Visualize trends and
+                        calculate GPA outcomes.</p>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon">🏀</div>
-                        <h2 class="card-title">Pok A Tok</h2>
-                    </div>
-                    <p class="card-description">
-                        Experience the ancient Mayan ball game brought to life. A unique gaming experience awaits!
-                    </p>
-                    <p class="card-description">
-                        The code is "2030."
-                    </p>
-                    <div style="margin-bottom: 20px;">
-                        <span class="badge available"><span class="status-indicator"></span>Available Now</span>
-                    </div>
-                    <a href="https://popatok.bananaballers.run.place/" class="btn" target="_blank">Play Now</a>
+                <div class="card-footer">
+                    <span class="badge badge-beta">Beta</span>
+                    <a href="/grades" class="btn">Open Grades</a>
                 </div>
             </div>
 
-            <footer>
-                <p>&copy; 2025 ViB Suite. All rights reserved.</p>
-            </footer>
+            <!-- Bird Game -->
+            <div class="card">
+                <div class="card-icon">🐦</div>
+                <div class="card-content">
+                    <h2>Bird Game</h2>
+                    <p class="card-description">A high-fidelity flappy experiment. Test your reflexes in this stylized
+                        bird challenge.</p>
+                </div>
+                <div class="card-footer">
+                    <span class="badge badge-live">Live</span>
+                    <a href="/birdgame4" class="btn">Play Game</a>
+                </div>
+            </div>
+
+            <!-- Smart App -->
+            <div class="card">
+                <div class="card-icon">🧠</div>
+                <div class="card-content">
+                    <h2>Smart App</h2>
+                    <p class="card-description">Intelligent workspace tools for smarter productivity and task
+                        management.</p>
+                </div>
+                <div class="card-footer">
+                    <span class="badge badge-live">Live</span>
+                    <a href="/smart" class="btn">Access Hub</a>
+                </div>
+            </div>
+
+            <!-- Doodle -->
+            <div class="card">
+                <div class="card-icon">🎨</div>
+                <div class="card-content">
+                    <h2>Doodle</h2>
+                    <p class="card-description">Collaborative whiteboard and sketchpad for visual brainstorming and
+                        quick ideas.</p>
+                </div>
+                <div class="card-footer">
+                    <span class="badge badge-live">Live</span>
+                    <a href="/doodle" class="btn">Start Drawing</a>
+                </div>
+            </div>
+
+            <!-- Documentation -->
+            <div class="card">
+                <div class="card-icon">📖</div>
+                <div class="card-content">
+                    <h2>Documentation</h2>
+                    <p class="card-description">The official guidebook for ViB Suite tools, APIs, and development
+                        standards.</p>
+                </div>
+                <div class="card-footer">
+                    <span class="badge badge-soon">Update Coming</span>
+                    <a href="/doc" class="btn">Read Docs</a>
+                </div>
+            </div>
+
+            <!-- iMessage Summarizer (Future) -->
+            <div class="card" style="opacity: 0.6;">
+                <div class="card-icon">💬</div>
+                <div class="card-content">
+                    <h2>Message Summarizer</h2>
+                    <p class="card-description">AI-powered summaries for your iMessage group chats. Never miss a point
+                        again.</p>
+                </div>
+                <div class="card-footer">
+                    <span class="badge badge-soon">Soon</span>
+                    <a href="#" class="btn" style="pointer-events: none; opacity: 0.5;">Locked</a>
+                </div>
+            </div>
         </div>
+
+        <footer>
+            <p>&copy; 2026 ViB Suite. Built for the modern workspace.</p>
+        </footer>
     </div>
-
-    <script>
-        function showMenu(menuId) {
-            // Hide all menus
-            document.querySelectorAll('.menu').forEach(menu => {
-                menu.classList.remove('active');
-            });
-            
-            // Show selected menu with animation
-            const targetMenu = document.getElementById(menuId);
-            targetMenu.classList.add('active', 'fade-in');
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    </script>
 </body>
+
 </html>
