@@ -16,7 +16,7 @@
   {
     "emoji": "📊",
     "title": "Grades Summarizer",
-    "external_link": "",
+    "external_link": "https://apps.veerbajaj.com/grades",
     "local_path": "/grades",
     "description": "Advanced analytics for your academic performance. Visualize trends and calculate GPA outcomes.",
     "lucide_icon": "graduation-cap",
@@ -28,7 +28,7 @@
   {
     "emoji": "🐦",
     "title": "Bird Game",
-    "external_link": "",
+    "external_link": "https://apps.veerbajaj.com/birdgame4",
     "local_path": "/birdgame4",
     "description": "A high-fidelity flappy experiment. Test your reflexes in this stylized bird challenge.",
     "lucide_icon": "bird",
@@ -40,7 +40,7 @@
   {
     "emoji": "🧠",
     "title": "Smart App",
-    "external_link": "",
+    "external_link": "https://apps.veerbajaj.com/smart",
     "local_path": "/smart",
     "description": "Intelligent workspace tools for smarter productivity and task management.",
     "lucide_icon": "brain",
@@ -52,7 +52,7 @@
   {
     "emoji": "🎨",
     "title": "Doodle",
-    "external_link": "",
+    "external_link": "https://apps.veerbajaj.com/doodle",
     "local_path": "/doodle",
     "description": "Collaborative whiteboard and sketchpad for visual brainstorming and quick ideas.",
     "lucide_icon": "palette",
@@ -64,7 +64,7 @@
   {
     "emoji": "📖",
     "title": "Documentation",
-    "external_link": "",
+    "external_link": "https://apps.veerbajaj.com/doc",
     "local_path": "/doc",
     "description": "The official guidebook for ViB Suite tools, APIs, and development standards.",
     "lucide_icon": "book-open",
@@ -76,7 +76,7 @@
   {
     "emoji": "💬",
     "title": "Message Summarizer",
-    "external_link": "",
+    "external_link": "https://apps.veerbajaj.com/#",
     "local_path": "#",
     "description": "AI-powered summaries for your iMessage group chats. Never miss a point again.",
     "lucide_icon": "message-square",
@@ -86,5 +86,6 @@
     "button_text": "Locked"
   }
 ]
+
 
 
