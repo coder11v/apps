@@ -23,6 +23,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;700&display=swap"
         rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
             --bg-color: #030303;
@@ -144,6 +146,12 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .card-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: currentColor;
+        }
+
         .card-content h2 {
             font-size: 1.5rem;
             font-weight: 600;
@@ -256,34 +264,6 @@
             }
         }
 
-        .card:nth-child(1) {
-            animation-delay: 0.1s;
-        }
-
-        .card:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .card:nth-child(3) {
-            animation-delay: 0.3s;
-        }
-
-        .card:nth-child(4) {
-            animation-delay: 0.4s;
-        }
-
-        .card:nth-child(5) {
-            animation-delay: 0.5s;
-        }
-
-        .card:nth-child(6) {
-            animation-delay: 0.6s;
-        }
-
-        .card:nth-child(7) {
-            animation-delay: 0.7s;
-        }
-
         footer {
             text-align: center;
             padding: 40px;
@@ -316,104 +296,63 @@
         </header>
 
         <div class="dashboard-grid">
-            <!-- Banana Ballers (Direct Link) -->
-            <div class="card" style="border-color: rgba(247, 208, 70, 0.3);">
-                <div class="card-icon" style="background: rgba(247, 208, 70, 0.1);">🍌</div>
-                <div class="card-content">
-                    <h2>Banana Ballers</h2>
-                    <p class="card-description">Official Banana Ballers app portal. Creative movies, games, and team
-                        projects.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-live"><span class="status-dot online"></span>Active</span>
-                    <a href="http://app.bananaballers.run.place/" class="btn btn-banana">Launch App</a>
-                </div>
-            </div>
-
-            <!-- Grades Summarizer -->
-            <div class="card">
-                <div class="card-icon">📊</div>
-                <div class="card-content">
-                    <h2>Grades Summarizer</h2>
-                    <p class="card-description">Advanced analytics for your academic performance. Visualize trends and
-                        calculate GPA outcomes.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-beta">Beta</span>
-                    <a href="/grades" class="btn">Open Grades</a>
-                </div>
-            </div>
-
-            <!-- Bird Game -->
-            <div class="card">
-                <div class="card-icon">🐦</div>
-                <div class="card-content">
-                    <h2>Bird Game</h2>
-                    <p class="card-description">A high-fidelity flappy experiment. Test your reflexes in this stylized
-                        bird challenge.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-live">Live</span>
-                    <a href="/birdgame4" class="btn">Play Game</a>
-                </div>
-            </div>
-
-            <!-- Smart App -->
-            <div class="card">
-                <div class="card-icon">🧠</div>
-                <div class="card-content">
-                    <h2>Smart App</h2>
-                    <p class="card-description">Intelligent workspace tools for smarter productivity and task
-                        management.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-live">Live</span>
-                    <a href="/smart" class="btn">Access Hub</a>
-                </div>
-            </div>
-
-            <!-- Doodle -->
-            <div class="card">
-                <div class="card-icon">🎨</div>
-                <div class="card-content">
-                    <h2>Doodle</h2>
-                    <p class="card-description">Collaborative whiteboard and sketchpad for visual brainstorming and
-                        quick ideas.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-live">Live</span>
-                    <a href="/doodle" class="btn">Start Drawing</a>
-                </div>
-            </div>
-
-            <!-- Documentation -->
-            <div class="card">
-                <div class="card-icon">📖</div>
-                <div class="card-content">
-                    <h2>Documentation</h2>
-                    <p class="card-description">The official guidebook for ViB Suite tools, APIs, and development
-                        standards.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-soon">Update Coming</span>
-                    <a href="/doc" class="btn">Read Docs</a>
-                </div>
-            </div>
-
-            <!-- iMessage Summarizer (Future) -->
-            <div class="card" style="opacity: 0.6;">
-                <div class="card-icon">💬</div>
-                <div class="card-content">
-                    <h2>Message Summarizer</h2>
-                    <p class="card-description">AI-powered summaries for your iMessage group chats. Never miss a point
-                        again.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-soon">Soon</span>
-                    <a href="#" class="btn" style="pointer-events: none; opacity: 0.5;">Locked</a>
-                </div>
-            </div>
+            <!-- Cards will be dynamically loaded here -->
         </div>
+
+        <script>
+            async function loadCards() {
+                try {
+                    const response = await fetch('cards.json');
+                    const cards = await response.json();
+                    const grid = document.querySelector('.dashboard-grid');
+                    grid.innerHTML = ''; 
+
+                    cards.forEach((card, index) => {
+                        const cardElement = document.createElement('div');
+                        cardElement.className = 'card';
+                        cardElement.style.animationDelay = `${(index + 1) * 0.1}s`;
+                        
+                        if (card.theme_color) {
+                            cardElement.style.borderColor = card.theme_color;
+                        }
+                        
+                        if (!card.is_active) {
+                            cardElement.style.opacity = '0.6';
+                        }
+
+                        const iconStyle = card.icon_bg ? `style="background: ${card.icon_bg};"` : '';
+                        const link = card.external_link || card.local_path || '#';
+                        const btnClass = card.title === 'Banana Ballers' ? 'btn btn-banana' : 'btn';
+                        const pointerEvents = card.is_active ? '' : 'style="pointer-events: none; opacity: 0.5;"';
+
+                        cardElement.innerHTML = `
+                            <div class="card-icon" ${iconStyle}>
+                                ${card.lucide_icon ? `<i data-lucide="${card.lucide_icon}"></i>` : card.emoji}
+                            </div>
+                            <div class="card-content">
+                                <h2>${card.title}</h2>
+                                <p class="card-description">${card.description}</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="badge ${card.badge_class}">
+                                    ${card.status === 'Active' ? '<span class="status-dot online"></span>' : ''}${card.status}
+                                </span>
+                                <a href="${link}" class="${btnClass}" ${pointerEvents}>${card.button_text || 'Open'}</a>
+                            </div>
+                        `;
+                        grid.appendChild(cardElement);
+                    });
+
+                    // Initialize Lucide icons
+                    lucide.createIcons();
+                } catch (error) {
+                    console.error('Error loading cards:', error);
+                    // Fallback to error message if fetch fails
+                    document.querySelector('.dashboard-grid').innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">Failed to load dashboard components. Please try again later.</p>';
+                }
+            }
+            window.addEventListener('DOMContentLoaded', loadCards);
+        </script>
 
         <footer>
             <p>&copy; 2026 ViB Suite. Built for the modern workspace.</p>

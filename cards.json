@@ -1,0 +1,90 @@
+[
+  {
+    "emoji": "🍌",
+    "title": "Banana Ballers",
+    "external_link": "http://app.bananaballers.run.place/",
+    "local_path": "",
+    "description": "Official Banana Ballers app portal. Creative movies, games, and team projects.",
+    "lucide_icon": "banana",
+    "status": "Active",
+    "badge_class": "badge-live",
+    "is_active": true,
+    "theme_color": "rgba(247, 208, 70, 0.3)",
+    "icon_bg": "rgba(247, 208, 70, 0.1)",
+    "button_text": "Launch App"
+  },
+  {
+    "emoji": "📊",
+    "title": "Grades Summarizer",
+    "external_link": "",
+    "local_path": "/grades",
+    "description": "Advanced analytics for your academic performance. Visualize trends and calculate GPA outcomes.",
+    "lucide_icon": "graduation-cap",
+    "status": "Beta",
+    "badge_class": "badge-beta",
+    "is_active": true,
+    "button_text": "Open Grades"
+  },
+  {
+    "emoji": "🐦",
+    "title": "Bird Game",
+    "external_link": "",
+    "local_path": "/birdgame4",
+    "description": "A high-fidelity flappy experiment. Test your reflexes in this stylized bird challenge.",
+    "lucide_icon": "bird",
+    "status": "Live",
+    "badge_class": "badge-live",
+    "is_active": true,
+    "button_text": "Play Game"
+  },
+  {
+    "emoji": "🧠",
+    "title": "Smart App",
+    "external_link": "",
+    "local_path": "/smart",
+    "description": "Intelligent workspace tools for smarter productivity and task management.",
+    "lucide_icon": "brain",
+    "status": "Live",
+    "badge_class": "badge-live",
+    "is_active": true,
+    "button_text": "Access Hub"
+  },
+  {
+    "emoji": "🎨",
+    "title": "Doodle",
+    "external_link": "",
+    "local_path": "/doodle",
+    "description": "Collaborative whiteboard and sketchpad for visual brainstorming and quick ideas.",
+    "lucide_icon": "palette",
+    "status": "Live",
+    "badge_class": "badge-live",
+    "is_active": true,
+    "button_text": "Start Drawing"
+  },
+  {
+    "emoji": "📖",
+    "title": "Documentation",
+    "external_link": "",
+    "local_path": "/doc",
+    "description": "The official guidebook for ViB Suite tools, APIs, and development standards.",
+    "lucide_icon": "book-open",
+    "status": "Update Coming",
+    "badge_class": "badge-soon",
+    "is_active": true,
+    "button_text": "Read Docs"
+  },
+  {
+    "emoji": "💬",
+    "title": "Message Summarizer",
+    "external_link": "",
+    "local_path": "#",
+    "description": "AI-powered summaries for your iMessage group chats. Never miss a point again.",
+    "lucide_icon": "message-square",
+    "status": "Soon",
+    "badge_class": "badge-soon",
+    "is_active": false,
+    "button_text": "Locked"
+  }
+]
+
+
